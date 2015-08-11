@@ -1,11 +1,6 @@
 package com.taykey.twitterlocationparser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,61 +66,82 @@ public class DefaultLocationParser implements LocationParser {
 
     private Location getLocationFromCandidates(
             Map<LocationType, Set<Location>> candidates) {
-
+        
         Set<Location> cityCandidates = candidates.get(LocationType.City);
         Set<Location> stateCandidates = candidates.get(LocationType.State);
         Set<Location> countryCandidates = candidates.get(LocationType.Country);
+        List<Suspect> suspects = new ArrayList<Suspect>();
+        List<Suspect> defendants = new ArrayList<Suspect>();
 
         if (cityCandidates != null) {
-            // in this point we are sure about which city we have.
-            // we can check if we have states or countries and cross them to
-            // increase confidence.
-            if (cityCandidates.size() == 1
-                    && (stateCandidates == null || stateCandidates.isEmpty())
-                    && (countryCandidates == null || countryCandidates.isEmpty())) {
-                return cityCandidates.iterator().next();
+            double overallPopulation = 0;
+            for (Location city : cityCandidates) {
+                overallPopulation += city.getPopulation();
             }
 
-            if (cityCandidates.size() > 1) {
-                // in this point we know we have more then 1 city.
-                // we can choose the right city if there is a state or city info
-                // if there isn't we will choose the major one if there is a big
-                // diff.
-                Location max = null;
-                int maxPopulation = 0;
-                int secondMaxPopulation = 0;
-                for (Location location : cityCandidates) {
-                    int population = location.getPopulation();
-                    if (population > maxPopulation) {
-                        secondMaxPopulation = maxPopulation;
-                        maxPopulation = population;
-                        max = location;
+            for (Location city : cityCandidates) {
+                // confidence of a city is equal to percentage of its population compared to other cities
+                // thus, maximum confidence is 1.0
+                final double confidence = city.getPopulation() / overallPopulation;
+                suspects.add(new Suspect(city, confidence));
+            }
+        }
+
+        if (stateCandidates != null) {
+            final double confidence = 1.0;
+
+            for (Location state : stateCandidates) {
+                boolean found = false;
+                for (Suspect suspect : suspects) {
+                    boolean sameState = suspect.getLocation().getStateCode().equals(state.getStateCode());
+                    if (sameState) {
+                        suspect.increaseConfidence(confidence);
+                        found = true;
                     }
                 }
-                if (maxPopulation > secondMaxPopulation * 10) {
-                    return max;
+
+                if (!found) {
+                    suspects.add(new Suspect(state, confidence));
                 }
             }
         }
 
-        if (stateCandidates != null && stateCandidates.size() == 1) {
-            // in this point we are sure about which state we have.
-            // we can check if we have cities or countries and cross them to
-            // increase confidence.
-            if ((countryCandidates == null || countryCandidates.isEmpty())
-                    && (cityCandidates == null || cityCandidates.isEmpty())) {
-                return stateCandidates.iterator().next();
+        if (countryCandidates != null) {
+            // number of countries in the world is much lower than number of cities or states
+            // so countries have highest confidence since probability of error is much lower than in other cases
+            final double confidence = 2.0;
+
+            for (Location country : countryCandidates) {
+                boolean found = false;
+                for (Suspect suspect : suspects) {
+                    boolean sameCountry = suspect.getLocation().getCountryCode().equals(country.getCountryCode());
+                    if (sameCountry) {
+                        suspect.increaseConfidence(confidence);
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    suspects.add(new Suspect(country, confidence));
+                }
             }
         }
 
-        if (countryCandidates != null && countryCandidates.size() == 1) {
-            // in this point we are sure about which country we have.
-            // we can check if we have cities or states and cross them to
-            // increase confidence.
-            if ((stateCandidates == null || stateCandidates.isEmpty())
-                    && (cityCandidates == null || cityCandidates.isEmpty())) {
-                return countryCandidates.iterator().next();
+        // put suspects with the highest confidence to a list of defendants
+        double maxConfidence = 0.0;
+        for (Suspect suspect: suspects) {
+            if (suspect.getConfidence() > maxConfidence) {
+                maxConfidence = suspect.getConfidence();
+                defendants.clear();
             }
+
+            if (Double.compare(suspect.getConfidence(), maxConfidence) == 0) {
+                defendants.add(suspect);
+            }
+        }
+
+        if (defendants.size() == 1 && maxConfidence > 0.7) {
+            return defendants.get(0).getLocation();
         }
 
         return null;
@@ -189,4 +205,26 @@ public class DefaultLocationParser implements LocationParser {
         this.populateDB = populateDB;
     }
 
+    private static class Suspect {
+        Location location;
+
+        double confidence;
+
+        public Suspect(Location location, double confidence) {
+            this.location = location;
+            this.confidence = confidence;
+        }
+
+        public Location getLocation() {
+            return location;
+        }
+
+        public double getConfidence() {
+            return confidence;
+        }
+
+        public void increaseConfidence(double factor) {
+            confidence += factor;
+        }
+    }
 }
