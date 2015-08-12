@@ -25,7 +25,8 @@ public class MemLocationDao implements LocationDao {
         alternateNames += "," + location.getName();
         String[] names = alternateNames.split(",");
         for (String name : names) {
-            if (name.length() <= 2) {
+            name = name.trim();
+            if (name.length() < 2 || (location.getType() == LocationType.City && name.length() <= 2)) {
                 continue;
             }
 
