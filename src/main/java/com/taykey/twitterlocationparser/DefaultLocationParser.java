@@ -31,6 +31,13 @@ public class DefaultLocationParser implements LocationParser {
         this.setLocationDao(locationDao);
     }
 
+    private Comparator<Location> typeComparator = new Comparator<Location>() {
+        @Override
+        public int compare(Location o1, Location o2) {
+            return o1.getType().compareTo(o2.getType());
+        }
+    };
+
     @Override
     public Location parseText(String text) {
         if (text == null || text.isEmpty()) {
@@ -48,8 +55,16 @@ public class DefaultLocationParser implements LocationParser {
             if (locations == null) {
                 continue;
             }
-            wordsWithLocation.add(word);
+
+            Collections.sort(locations, typeComparator);
+            boolean hasTheWordBeenUsedAsCityName = false;
             for (Location location : locations) {
+                if (location.getType() == LocationType.City) {
+                    hasTheWordBeenUsedAsCityName = true;
+                } else if (hasTheWordBeenUsedAsCityName) {
+                    break;
+                }
+
                 Set<Location> set = candidates.get(location.getType());
                 if (set == null) {
                     set = new HashSet<Location>();
@@ -57,6 +72,8 @@ public class DefaultLocationParser implements LocationParser {
                 }
                 set.add(location);
             }
+
+            wordsWithLocation.add(word);
         }
 
         Location location = getLocationFromCandidates(candidates);
@@ -74,21 +91,39 @@ public class DefaultLocationParser implements LocationParser {
         List<Suspect> defendants = new ArrayList<Suspect>();
 
         if (cityCandidates != null) {
-            double overallPopulation = 0;
+            // eliminating duplications which are present in data
+            int overallPopulation = 0;
             for (Location city : cityCandidates) {
-                overallPopulation += city.getPopulation();
+                boolean duplicate = false;
+                for (Suspect suspect : suspects) {
+                    Location suspectLocation = suspect.getLocation();
+                    boolean sameCountry = suspectLocation.getCountryCode().equals(city.getCountryCode());
+                    boolean sameState = suspectLocation.getStateCode().equals(city.getStateCode());
+                    boolean samePopulation = suspectLocation.getPopulation() == city.getPopulation();
+                    if (sameCountry && sameState && samePopulation) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                if (!duplicate) {
+                    overallPopulation += city.getPopulation();
+                    suspects.add(new Suspect(city, 0));
+                }
             }
 
-            for (Location city : cityCandidates) {
+            for (Suspect suspect : suspects) {
                 // confidence of a city is equal to percentage of its population compared to other cities
                 // thus, maximum confidence is 1.0
-                final double confidence = city.getPopulation() / overallPopulation;
-                suspects.add(new Suspect(city, confidence));
+                final double confidence = overallPopulation > 0 // avoiding division by zero
+                        ? suspect.getLocation().getPopulation() / (double) overallPopulation
+                        : 1.0;
+                suspect.increaseConfidence(confidence);
             }
         }
 
         if (stateCandidates != null) {
-            final double confidence = 1.0;
+            final double confidence = 1.2;
 
             for (Location state : stateCandidates) {
                 boolean found = false;
