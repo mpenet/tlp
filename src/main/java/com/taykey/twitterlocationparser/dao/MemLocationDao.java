@@ -1,20 +1,17 @@
 package com.taykey.twitterlocationparser.dao;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.taykey.twitterlocationparser.dto.Location;
 import com.taykey.twitterlocationparser.dto.LocationType;
 
 public class MemLocationDao implements LocationDao {
 
-    Map<String, List<Location>> locations = new HashMap<String, List<Location>>();
+    private Map<String, List<Location>> locations = new HashMap<String, List<Location>>();
 
-    Map<String, Location> countries = new HashMap<String, Location>();
+    private Map<String, Location> countries = new HashMap<String, Location>();
 
-    Map<String, Location> states = new HashMap<String, Location>();
+    private Map<String, Location> states = new HashMap<String, Location>();
 
     public MemLocationDao() {
     }
@@ -60,5 +57,11 @@ public class MemLocationDao implements LocationDao {
     @Override
     public Location getStateByCode(String stateCode) {
         return states.get(stateCode);
+    }
+
+    @Override
+    public void sortLocationsBy(final Comparator<Location> comparator) {
+        for (Map.Entry<String, List<Location>> location: locations.entrySet())
+            Collections.sort(location.getValue(), comparator);
     }
 }

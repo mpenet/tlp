@@ -19,24 +19,24 @@ public class DefaultLocationParser implements LocationParser {
 
     private LocationDao locationDao;
 
-    private PopulateDB populateDB;
-
     public DefaultLocationParser() {
         locationDao = new MemLocationDao();
-        PopulateDB populateDB = new DefaultPopulateDB(locationDao);
+        final PopulateDB populateDB = new DefaultPopulateDB(locationDao);
         populateDB.loadLocations();
+
+        final Comparator<Location> typeComparator = new Comparator<Location>() {
+            @Override
+            public int compare(Location o1, Location o2) {
+                return o1.getType().compareTo(o2.getType());
+            }
+        };
+
+        locationDao.sortLocationsBy(typeComparator);
     }
 
     public DefaultLocationParser(LocationDao locationDao) {
         this.setLocationDao(locationDao);
     }
-
-    private Comparator<Location> typeComparator = new Comparator<Location>() {
-        @Override
-        public int compare(Location o1, Location o2) {
-            return o1.getType().compareTo(o2.getType());
-        }
-    };
 
     @Override
     public Location parseText(String text) {
@@ -56,7 +56,6 @@ public class DefaultLocationParser implements LocationParser {
                 continue;
             }
 
-            Collections.sort(locations, typeComparator);
             boolean hasTheWordBeenUsedAsCityName = false;
             for (Location location : locations) {
                 if (location.getType() == LocationType.City) {
@@ -230,14 +229,6 @@ public class DefaultLocationParser implements LocationParser {
 
     public void setLocationDao(LocationDao locationDao) {
         this.locationDao = locationDao;
-    }
-
-    public PopulateDB getPopulateDB() {
-        return populateDB;
-    }
-
-    public void setPopulateDB(PopulateDB populateDB) {
-        this.populateDB = populateDB;
     }
 
     private static class Suspect {

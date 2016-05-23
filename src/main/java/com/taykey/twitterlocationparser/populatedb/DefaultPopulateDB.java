@@ -21,9 +21,8 @@ public class DefaultPopulateDB implements PopulateDB {
     private List<String> dataFiles;
 
     public DefaultPopulateDB(LocationDao locationDao) {
-        this.locationDao = locationDao;
-        this.dataFiles = Arrays.asList("data/countries.tsv", "data/states.tsv",
-                "data/cities.tsv");
+        this(locationDao, Arrays.asList("data/countries.tsv", "data/states.tsv",
+              "data/cities.tsv"));
     }
 
     public DefaultPopulateDB(LocationDao locationDao, List<String> dataFiles) {
@@ -32,7 +31,7 @@ public class DefaultPopulateDB implements PopulateDB {
     }
 
     public void loadLocations(String dataFile) {
-        log.debug("start loaading file: {}", dataFile);
+        log.debug("start loading file: {}", dataFile);
         int counter = 0;
         IterableFile iterator = new IterableFile(dataFile);
         for (String text : iterator) {
@@ -42,7 +41,7 @@ public class DefaultPopulateDB implements PopulateDB {
                     fields[2], fields[3], LocationType.valueOf(fields[4]),
                     Integer.parseInt(fields[5])));
         }
-        log.debug("done loaading file: {}. added {} new records", dataFile,
+        log.debug("done loading file: {}. added {} new records", dataFile,
                 counter);
     }
 
