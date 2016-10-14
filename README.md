@@ -1,64 +1,39 @@
-#Twitter Location Parser
+# Twitter Location Parser
 
-Fast twitter user's location parser
+A fork of https://github.com/smallrivers/twitter-location-parser with
+a Clojure friendly API and support for latitude/longitude retrieval.
 
-This project purpose is to parse the location field in twitter's [user](https://dev.twitter.com/docs/platform-objects/users) object.
+It has a simplistic API and also a ready to
+use [component](https://github.com/stuartsierra/component).
 
-The main requirment while writing this project is to support the speed of [Twitter's firehose streaming api](https://dev.twitter.com/docs/api/1.1/get/statuses/firehose), which is ~10000 msg / sec.
+``` clojure
+(use 'qbits.tlp)
+(def p (load-parser))
+(find-location p "paris")
 
-###Getting Started
-####_Installation_
-#####_Maven_
-_*Currntly the project is not deplyed in [maven](http://maven.apache.org/) repoistory._
+=>
+{:name "Paris",
+ :alternate-names
+ "Baariis,Bahliz,Gorad Paryzh,Lungsod ng Paris,Lutece,Lutetia,Lutetia Parisorum,Lutèce,PAR,Pa-ri,Paarys,Palika,Paname,Pantruche,Paraeis,Paras,Pari,Paries,Parigge,Pariggi,Parighji,Parigi,Pariis,Pariisi,Pariizu,Pariižu,Parij,Parijs,Paris,Parisi,Parixe,Pariz,Parize,Parizh,Parizh osh,Parizh',Parizo,Parizs,Pariž,Parys,Paryz,Paryzius,Paryż,Paryžius,Paräis,París,Paríž,Parîs,Parĩ,Parī,Parīze,Paříž,Páras,Párizs,Ville-Lumiere,Ville-Lumière,ba li,barys,pairisa,pali,pari,paris,parys,paryzh,perisa,pryz,pyaris,pyarisa,pyrs,Παρίσι,Горад Парыж,Париж,Париж ош,Парижь,Париз,Парис,Паріж,Փարիզ,פאריז,פריז,باريس,پارىژ,پاريس,پاریس,پیرس,ܦܐܪܝܣ,पॅरिस,पेरिस,पैरिस,প্যারিস,ਪੈਰਿਸ,પૅરિસ,பாரிஸ்,పారిస్,ಪ್ಯಾರಿಸ್,പാരിസ്,ปารีส,ཕ་རི།,ပါရီမြို့,პარიზი,ፓሪስ,ប៉ារីស,パリ,巴黎,파리",
+ :state-code "11",
+ :country-code "FR",
+ :type :city,
+ :population 2138551,
+ :latitude 48.85341,
+ :longitude 2.3488}
 
-Download the latest version [here](https://github.com/taykey/twitter-location-parser/archive/twitter-location-parser-0.9.1.tar.gz) and run `mvn install` to install it into your local maven repository.
-Then include this dependency in the pom.xml
-
-    <dependency>
-      <groupId>com.taykey</groupId>
-      <artifactId>twitter-location-parser</artifactId>
-      <version>${twitter-location-parser.version}</version>
-    </dependency>   
-
-
-Another option is to run `mvn package` and use the jar in `target` folder.
-
-####_Usage_
-
-    import com.taykey.twitterlocationparser.dto.Location
-    import com.taykey.twitterlocationparser.LocationParser;
-    import com.taykey.twitterlocationparser.DefaultLocationParser;
-    .
-    .
-    .
-    LocationParser locationParser = new DefaultLocationParser();
-    String text = "i live in Tel Aviv";
-    Location location = locationParser.parseText(text);
-    System.out.println(location.getName());
+```
 
 
-Or by using [Spring](http://spring.io/):
+The component is in `qbits.tlp.component`, it uses the same api, you
+just call `qbits.tlp/find-location` on it once it's started to get a
+match.
 
-Import the spring config of twitter location parser by adding this to the spring-config.xml:
+## Installation
 
-    <import resource="classpath:twitter-location-parser-spring-config.xml"/>
+add this to your `project.clj`
 
-And then:
-
-    import com.taykey.twitterlocationparser.dto.Location
-    import com.taykey.twitterlocationparser.LocationParser;
-    .
-    .
-    .
-    @Autowired
-	  private LocationParser locationParser;
-    .
-    .
-    .
-    String text = "i live in Tel Aviv"
-    Location location = locationParser.parseText(text)
-    System.out.println(location.getName());
-    
-
-####TODO's:
-The To-do's for the project are location in [TODO](https://github.com/taykey/twitter-location-parser/blob/master/TODO) file.
+``` clojure
+[cc.qbits/tlp "0.9.4"]
+```
+and you're good to go

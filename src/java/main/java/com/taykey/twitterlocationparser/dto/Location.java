@@ -14,17 +14,23 @@ public class Location {
 
     private int population;
 
+    private double latitude;
+    private double longitude;
+
     public Location() {
     }
 
     public Location(String name, String alternateNames, String countryCode,
-            String stateCode, LocationType type, int population) {
+                    String stateCode, LocationType type, int population,
+                    double latitude, double longitude) {
         this.name = name;
         this.alternateNames = alternateNames;
         this.countryCode = countryCode;
         this.stateCode = stateCode;
         this.type = type;
         this.population = population;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getName() {
@@ -69,6 +75,14 @@ public class Location {
 
     public int getPopulation() {
         return this.population;
+    }
+
+    public double getLatitude() {
+        return this.latitude;
+    }
+
+    public double getLongitude() {
+        return this.longitude;
     }
 
     public void setPopulation(int population) {

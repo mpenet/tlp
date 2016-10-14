@@ -14,7 +14,7 @@ import com.taykey.twitterlocationparser.dto.LocationType;
 public class DefaultPopulateDB implements PopulateDB {
 
     private static Logger log = LoggerFactory
-            .getLogger(DefaultPopulateDB.class);
+        .getLogger(DefaultPopulateDB.class);
 
     private LocationDao locationDao;
 
@@ -22,7 +22,7 @@ public class DefaultPopulateDB implements PopulateDB {
 
     public DefaultPopulateDB(LocationDao locationDao) {
         this(locationDao, Arrays.asList("data/countries.tsv", "data/states.tsv",
-              "data/cities.tsv"));
+                                        "data/cities.tsv"));
     }
 
     public DefaultPopulateDB(LocationDao locationDao, List<String> dataFiles) {
@@ -38,11 +38,14 @@ public class DefaultPopulateDB implements PopulateDB {
             counter++;
             String[] fields = text.split("\t");
             locationDao.addLocation(new Location(fields[0], fields[1],
-                    fields[2], fields[3], LocationType.valueOf(fields[4]),
-                    Integer.parseInt(fields[5])));
+                                                 fields[2], fields[3], LocationType.valueOf(fields[4]),
+                                                 Integer.parseInt(fields[5]),
+                                                 Double.parseDouble(fields[6]),
+                                                 Double.parseDouble(fields[7])
+                                                 ));
         }
         log.debug("done loading file: {}. added {} new records", dataFile,
-                counter);
+                  counter);
     }
 
     @Override
