@@ -5,7 +5,7 @@
   (:import
    (com.taykey.twitterlocationparser DefaultLocationParser)))
 
-(defrecord FuzzyLocationParser [^DefaultLocationParser parser]
+(defrecord LocationParser [^DefaultLocationParser parser]
   tlp/LocationParser
   (find-location [this text]
     (tlp/find-location parser text))
@@ -15,6 +15,5 @@
   (stop [this]
     (assoc this :parser nil)))
 
-
-;; (def p (com/start (map->FuzzyLocationParser {})))
-;; (tlp/find-location p "paris")
+;; (def p (com/start (map->LocationParser {})))
+;; (tlp/find-location p "los angeles")
