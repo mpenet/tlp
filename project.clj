@@ -1,4 +1,4 @@
-(defproject cc.qbits/tlp "1.0.0"
+(defproject cc.qbits/tlp "1.0.1"
   :description "Twitter Location Parser: fast tool to parse location out of twitter users"
   :dependencies [[org.clojure/clojure "1.9.0-alpha13"]
                  [com.stuartsierra/component "0.3.1"]
