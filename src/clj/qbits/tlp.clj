@@ -31,8 +31,3 @@
   DefaultLocationParser
   (find-location [this text]
     (some-> this (.parseText text) jloc->loc)))
-
-
-;; (def p (load-parser))
-
-;; (clojure.pprint/pprint (find-location p "france"))

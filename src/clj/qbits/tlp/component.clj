@@ -14,6 +14,3 @@
     (assoc this :parser (tlp/load-parser)))
   (stop [this]
     (assoc this :parser nil)))
-
-;; (def p (com/start (map->LocationParser {})))
-;; (tlp/find-location p "los angeles")

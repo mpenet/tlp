@@ -34,6 +34,6 @@ match.
 add this to your `project.clj`
 
 ``` clojure
-[cc.qbits/tlp "0.9.4"]
+[cc.qbits/tlp "1.0.1"]
 ```
 and you're good to go
